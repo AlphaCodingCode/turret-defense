@@ -1,13 +1,14 @@
 // Any global variables can be defined up here
-var tileNames = [];
-var tileset;
+let tileNames = [];
+let tileset;
 let turret1img;
 let turret2img;
-var slimeImg;
+let slimeImg;
 let money = 60;
 let turretAttached = null;
 let turrets = [];
 let minions = [];
+
 const worldMap = [
 ["23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "21", "28", "12", "29", "1", "1", "22", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23"],
 ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "24", "20", "20", "20", "16", "28", "15", "10", "3", "3", "17", "20", "20", "25", "2", "2", "2", "2", "2", "2", "2"],
@@ -35,6 +36,7 @@ const worldMap = [
 ["3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "1", "28", "12", "29", "1", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3"],
 ["3", "19", "23", "23", "23", "23", "18", "3", "3", "3", "3", "3", "3", "28", "12", "29", "19", "23", "23", "23", "23", "23", "23", "18", "3", "3", "3", "3", "3", "3", "3", "3"],
 ];
+
 let moveableSquares = [0, 7, 8, 9, 10, 11, 12, 13, 14, 15, 26, 27, 28, 29];
 
 function preload() {
@@ -42,6 +44,7 @@ function preload() {
     for (let i = 0; i < 34; i++) {
         tileNames.push("" + i);
     }
+
     tileset = new Tileset("imgs/tileset3.png", 32, 32, tileNames);
     tileset.setMap(worldMap);
     tileset.initMoveableList(moveableSquares);
@@ -54,103 +57,93 @@ function preload() {
 
 function setup() {
     createCanvas(1024, 800);
-    minions.push(new Minion(32 * 15, 24 * 32, slimeImg));
+    //minions.push(new Minion(32 * 15, 24 * 32, slimeImg));
 }
 
 function draw() {
     // Update
+    // Update the turrets
     for (let i = 0; i < turrets.length; i++) {
         turrets[i].update();
     }
-    //
-    // if (random(0, 50) <= 1) {
-    // }
-    for (let i = 0; i < minions.length; i++) {
-        minions[i].update();
-    }
+
+    // Update the minions
+
     // Render
+    // draw the map
     tileset.displayMap();
 
     // draw the minion
-    for (let i = 0; i < minions.length; i++) {
-        minions[i].render();
-    }
 
     // draw red rectangle tile indicator
     noFill();
-    try {
-        strokeWeight(2);
-        stroke(255, 0, 0);
-        rect(round(mouseX / tileset.tileW) * tileset.tileW, round(mouseY / tileset.tileH) * tileset.tileH, tileset.tileW, tileset.tileH);
-        stroke(0);
-        strokeWeight(1);
-        //console.log(tileset.map[round(mouseY / tileset.tileH)][round(mouseX / tileset.tileW)]);
-    } catch (err) {
-        console.log("mouse out of canvas. - indicator unshown.");
-    }
+    strokeWeight(2);
+    stroke(255, 0, 0);
+    let x = round(mouseX / tileset.tileW) * tileset.tileW;
+    let y = round(mouseY / tileset.tileH) * tileset.tileH;
+    rect(x, y, tileset.tileW, tileset.tileH);
+    stroke(0);
+    strokeWeight(1);
 
+    // draw the shop
     drawTurretToolbar();
+
+    // draw the turrets
     for (let i = 0; i < turrets.length; i++) {
         turrets[i].render();
     }
-    fill(0);
-    textSize(20);
-    text(round(mouseX / tileset.tileW) * tileset.tileW + ", " +  round(mouseY / tileset.tileH) * tileset.tileH, mouseX, mouseY);
-
-
 }
 
 
 function drawTurretToolbar() {
+    // black rect background for shop
     fill(0);
     rect(0, 0, 260, 100);
+
+    // draw money in white
     fill(255);
     textSize(20);
     textAlign(CENTER);
     text("You have $" + money, 130, 30);
-    textSize(14);
 
-    // turret 1
+    // turret 1 image
     image(turret1img, 10, 50, 32, 32);
+    textSize(14);
     text("$5", 10 + 16, 50 + 32 + 12);
 
-    // turret 2
+    // turret 2 image
     image(turret2img, 10 + 32, 50, 32, 32);
     text("$10", 10 + 32 + 16, 50 + 32 + 12);
-
 }
+
 
 function mouseClicked() {
     // if the user has a turret attached that turret needs to be replaced in a valid location.
     if (turretAttached != null) {
         // check is square is valid to place a unit on
-        if (tileset.moveable(round(mouseX / tileset.tileW), round(mouseY / tileset.tileH))) {
+        let tileX = round(mouseX / tileset.tileW);
+        let tileY = round(mouseY / tileset.tileH);
+        if (tileset.moveable(tileX, tileY)) {
             /// drop the turret
-            turretAttached.x = round(mouseX / tileset.tileW) * tileset.tileW;
-            turretAttached.y = round(mouseY / tileset.tileH) * tileset.tileH;
+            turretAttached.x = tileX * tileset.tileW;
+            turretAttached.y = tileY * tileset.tileH;
             turretAttached.attached = false;
             turretAttached = null;
         }
+    } else {
+        // check if the user has clicked on a turret
+        if (mouseOnRect(10, 50, 32, 32) && money >= 5) {
+            money -= 5;
+            turretAttached = new HorizontalTurret(mouseX, mouseY, turret1img);
+            turrets.push(turretAttached);
+        } else if (mouseOnRect(42, 50, 32, 32) && money >= 10) {
+            money -= 10;
+            turretAttached = new VerticalTurret(mouseX, mouseY, turret2img);
+            turrets.push(turretAttached);
+        }
     }
-    // check if the user has clicked on a turret
-    if (mouseOnRect(10, 50, 32, 32) && money >= 5) {
-        money -= 5;
-        turretAttached = new Turret(mouseX, mouseY, turret1img, 1);
-        turrets.push(turretAttached);
-    } else if (mouseOnRect(42, 50, 32, 32) && money >= 10) {
-        money -= 10;
-        turretAttached = new Turret(mouseX, mouseY, turret2img, 2);
-        turrets.push(turretAttached);
-    }
-
 }
 
-function mouseOnRect(x, y, w, h) {
-    if ((mouseX > x) && (mouseX < x + w) && (mouseY > y) && (mouseY < y + h)) {
-        return true;
-    }
-    return false;
-}
 
 //
 //
