@@ -10,7 +10,6 @@ class Minion {
         this.path = tileset.shortestPath(tileset.map[round(this.y / tileset.tileH)][round(this.x / tileset.tileW)], tileset.map[10][16]);
         this.pathIndex = 0;
         this.speed = 0.5;
-        console.log(this.path, "is the path");
     }
 
     update() {
@@ -23,7 +22,6 @@ class Minion {
                 temp.push(this.path[this.path.length - 1]);
                 this.path = temp;
                 this.pathIndex = 0;
-                console.log("minion arrived!");
             }
         }
         // head towards the path index specified
@@ -37,7 +35,6 @@ class Minion {
         } else if (this.y - 8 < this.path[this.pathIndex].y) {
             this.y += this.speed;
         }
-        console.log(this.x, this.y);
 
         //update minion's frame
         if (this.frameCD <= 0) {
