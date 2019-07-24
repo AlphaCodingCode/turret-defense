@@ -6,9 +6,10 @@ class Turret {
         this.img = img;
         this.bullets = [];
         this.cooldown = 0;
+        this.dmg = 1;
     }
 
-    updateBasicTurret(deltaX, deltaY) {
+    updateBasicTurret(deltaX, deltaY, bulletWidth) {
         // if the turret is attached wait for it to unattach
         if (this.attached) {
             this.x = mouseX;
@@ -16,7 +17,7 @@ class Turret {
             return;
         }
         // update the turret's bullet locations
-        if (this.bullets.length > 0) {
+        if (bulletWidth > 0) {
             for (let i = this.bullets.length - 1; i >= 0; i--) {
                 // splice bullets which are off screen
                 if (this.bullets[i].x < -10 || this.bullets[i].x > width || this.bullets[i].y < -10 || this.bullets[i].y > height) {
@@ -24,6 +25,21 @@ class Turret {
                 } else {
                     this.bullets[i].x += deltaX;
                     this.bullets[i].y += deltaY;
+                    // check if bullet has hit a minion
+                    // loop through minions array backwards
+                    for (let j = minions.length - 1; j >= 0; j--) {
+                        // if a bullet hits a minion
+                        if (dist(this.bullets[i].x, this.bullets[i].y, minions[j].x, minions[j].y) <= bulletWidth + (minions[j].size / 2)) {
+                            // the minion is damaged
+                            minions[j].attacked(this.dmg);
+                            // if the minion is dead from getting damaged, splice it off the minions array
+                            if (minions[j].health == 0)
+                                minions.splice(j, 1);
+                            // a bullet that hit a minion should be spliced too. Bullets shouldn't penetrate or double hit
+                            this.bullets.splice(i, 1);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -54,7 +70,11 @@ class VerticalTurret extends Turret {
     }
 
     update() {
-        super.updateBasicTurret(0, -4);
+        super.updateBasicTurret(0, -4, 4);
+    }
+
+    render() {
+        super.render(4);
     }
 }
 
@@ -65,6 +85,10 @@ class HorizontalTurret extends Turret {
     }
 
     update() {
-        super.updateBasicTurret(-4, 0);
+        super.updateBasicTurret(-4, 0, 4);
+    }
+
+    render() {
+        super.render(4);
     }
 }
