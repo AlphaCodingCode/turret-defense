@@ -8,6 +8,7 @@ let money = 60;
 let turretAttached = null;
 let turrets = [];
 let minions = [];
+let minionCD = 60;
 
 const worldMap = [
 ["23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23", "21", "28", "12", "29", "1", "1", "22", "23", "23", "23", "23", "23", "23", "23", "23", "23", "23"],
@@ -56,8 +57,8 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(1024, 800);
-    //minions.push(new Minion(32 * 15, 24 * 32, slimeImg));
+    createCanvas(1024, 800); // 32 x 25
+    minions.push(new Slime(15, 24, slimeImg));
 }
 
 function draw() {
@@ -68,12 +69,34 @@ function draw() {
     }
 
     // Update the minions
+    minionCD--;
+    if (minionCD <= 0) {
+        // reset spawning cooldown
+        minionCD = 60;
+        // pick a map coordinate to spawn the slime
+        while (true) {
+            let x = round(random(0, 31));
+            let y = round(random(0, 24));
+            let path = tileset.shortestPath(tileset.map[y][x], tileset.map[10][16]);
+            if (path.length > 10) {
+                minions.push(new Slime(x, y, slimeImg));
+                break;
+            }
+        }
+        // push a new slime into the minion array
+    }
+    for (let i = 0; i < minions.length; i++) {
+        minions[i].update();
+    }
 
     // Render
     // draw the map
     tileset.displayMap();
 
     // draw the minion
+    for (let i = 0; i < minions.length; i++) {
+        minions[i].render();
+    }
 
     // draw red rectangle tile indicator
     noFill();
