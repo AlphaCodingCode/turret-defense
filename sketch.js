@@ -73,17 +73,17 @@ function draw() {
     if (minionCD <= 0) {
         // reset spawning cooldown
         minionCD = 60;
-        // pick a map coordinate to spawn the slime
         while (true) {
+            // pick a spawn point for the slime
             let x = round(random(0, 31));
             let y = round(random(0, 24));
+            // if these X and Ys work, we should break; from the while loop.
             let path = tileset.shortestPath(tileset.map[y][x], tileset.map[10][16]);
             if (path.length > 10) {
                 minions.push(new Slime(x, y, slimeImg));
                 break;
             }
         }
-        // push a new slime into the minion array
     }
     for (let i = 0; i < minions.length; i++) {
         minions[i].update();
